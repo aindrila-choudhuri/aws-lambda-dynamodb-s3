@@ -1,0 +1,15 @@
+openapi: 3.0.0
+components:
+  schemas: {}
+  securitySchemes: {}
+info:
+  title: ''
+  description: ''
+  version: 3
+paths:
+  '//users/{id}':
+    get:
+      operationId: getUserById
+      summary: Get user by ID
+      description: Retrieve a user by their unique identifier
+      responses: {}

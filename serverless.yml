@@ -1,0 +1,113 @@
+service: aws-lambda-dynamodb-s3
+
+plugins:
+  - serverless-openapi-documentation
+
+custom:
+  documentation:
+    version: 3
+    components:
+      schemas:
+        User:
+          type: object
+          properties:
+            id:
+              type: integer
+            dateJoined:
+              type: integer
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+            gender:
+              type: string
+            ipAddress:
+              type: string
+         
+        responses:
+          BadRequest:
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+          NotFound:
+            description: Not found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+          ServerError:
+            description: Internal server error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+  environment:
+    S3_BUCKET_NAME: aws-data-sample-30032023
+    DATA_FILE_NAME: 'data.json'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+      Resource: arn:aws:s3:::aws-data-sample-30032023/*
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Query
+        - dynamodb:CreateTable
+        - dynamodb:DescribeTable
+        - dynamodb:BatchWriteItem
+      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+
+functions:
+  createUsers:
+    handler: src/handler.createUsers
+    timeout: 30
+    events:
+      - http:
+          path: /users
+          method: post
+  getUserById:
+    handler: src/handler.getUserById
+    events:
+      - http:
+          path: /users/{id}
+          method: get
+          cors: true
+          documentation:
+            summary: Get user by ID
+            description: Retrieve a user by their unique identifier
+            pathParams:
+              id:
+                type: integer
+                description: The ID of the user to retrieve
+                required: true
+            responses:
+              '200':
+                description: OK
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/User'
+              '404':
+                description: Not Found
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Error'
+
