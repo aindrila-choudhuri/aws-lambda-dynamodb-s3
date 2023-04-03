@@ -22,7 +22,7 @@ module.exports.getUserById = async (event) => {
   }
 };
 
-module.exports.createUsers = async (event, context) => {
+module.exports.createUsers = async () => {
   try {
     const s3Params = {
       Bucket: process.env.S3_BUCKET_NAME,
@@ -47,6 +47,23 @@ module.exports.createUsers = async (event, context) => {
     return success(201, { message: 'Successfully created' });
   } catch (err) {
     console.error(err);
+    return serverError();
+  }
+};
+
+module.exports.getUsers = async () => {
+  try {
+    // const users = await UsersModel.query().exec(); // err :  InvalidParameter: Index can't be found for
+    const users = await UsersModel.query({}).usingIndex('id-dateJoined-index').descending().exec();
+    // await UsersModel.query('id').using('id-dateJoined-index').where('id').gt(-1).exec();
+
+    if (!users.length) {
+      return notFound({ message: `User not found` });
+    }
+    const plainUsers = users.map((User) => User.toJSON());
+    return success(200, plainUsers);
+  } catch (err) {
+    console.error('err : ', err);
     return serverError();
   }
 };

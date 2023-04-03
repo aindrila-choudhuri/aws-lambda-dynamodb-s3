@@ -82,6 +82,13 @@ functions:
       - http:
           path: /users
           method: post
+  getUsers:
+    handler: src/handler.getUsers
+    timeout: 30
+    events:
+      - http:
+          path: /users
+          method: get
   getUserById:
     handler: src/handler.getUserById
     events:
